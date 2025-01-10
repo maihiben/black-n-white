@@ -1,0 +1,51 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 0 0% 3.9%;
+    --radius: 0.5rem;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-['Inter'];
+    -webkit-font-smoothing: antialiased;
+  }
+}
+
+.nominee-card {
+  @apply relative overflow-hidden rounded-lg bg-white p-6 shadow-sm transition-all duration-300 hover:shadow-md;
+}
+
+.nominee-image {
+  @apply aspect-square w-full object-cover rounded-lg mb-4 transition-transform duration-300;
+}
+
+.nominee-card:hover .nominee-image {
+  @apply scale-[1.02];
+}
+
+.auth-modal {
+  @apply fixed inset-0 bg-black/50 flex items-center justify-center p-4 backdrop-blur-sm animate-fadeIn;
+}
+
+.auth-modal-content {
+  @apply bg-white rounded-xl p-8 max-w-md w-full shadow-lg animate-scaleIn;
+}
+
+.auth-button {
+  @apply flex items-center justify-center gap-3 w-full px-6 py-3 rounded-lg border transition-all duration-200
+         hover:bg-gray-50 active:bg-gray-100;
+}
+
+.vote-count {
+  @apply absolute top-4 right-4 bg-black/80 text-white px-3 py-1 rounded-full text-sm font-medium;
+}

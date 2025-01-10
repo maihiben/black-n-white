@@ -10,11 +10,18 @@ const AdminLogin = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // You can change this password to anything you want
-    if (password === 'admin123') {
-      // Store admin authentication status
+    // For debugging - remove in production
+    console.log('Entered password:', password);
+    console.log('Expected password:', '789aBlacknWhite');
+    
+    if (password === '789aBlacknWhite') {
       localStorage.setItem('isAdminAuthenticated', 'true');
       navigate('/admin');
+      
+      toast({
+        title: "Success",
+        description: "Logged in successfully",
+      });
     } else {
       toast({
         title: "Error",
